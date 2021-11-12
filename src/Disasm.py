@@ -1,11 +1,10 @@
 from __future__ import annotations
 import os, sys
+import solcx
 
-WARP_ROOT = os.path.abspath(os.path.join(__file__, "../../../.."))
-sys.path.append(os.path.join(WARP_ROOT, "src"))
 import os, sys
-from cli.compilation.utils import is_entry_seq, get_jumpdest_offset
-from cli.compilation.opcode_tables import OP_TO_STR
+from utils import is_entry_seq, get_jumpdest_offset
+from opcode_tables import OP_TO_STR
 import json
 
 
@@ -93,10 +92,11 @@ class InstructionIterator:
 
 
 
-if __name__ == '__main__':
-    with open("weth10.bin") as f:
-        bytecode = f.read()
-    it = InstructionIterator(bytecode) 
+def main():
+    bin_path = f"{sys.argv[1][:-4]}.bin"
+    _, binary = solcx.compile_files([sys.argv[1]], output_values=['bin']).popitem()
+    it = InstructionIterator(binary['bin']) 
     dis = it.disassemble()
-    with open("weth.json", 'w') as f:
-        json.dump(dis, f, indent=4)
+    cleaned = list(dis.values())
+    with open(bin_path, 'w') as f:
+        f.write("\n".join(cleaned))
